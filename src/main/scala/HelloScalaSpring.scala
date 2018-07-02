@@ -17,7 +17,7 @@ class HelloScalaSpring extends HttpServlet {
     val responseBody: String =
       """<html>
         |  <body>
-        |    <h1>Hello, world!</h1>
+        |    <h1>HelloJava, world!</h1>
         |  </body>
         |</html>""".stripMargin
     res.getWriter.write(responseBody)
