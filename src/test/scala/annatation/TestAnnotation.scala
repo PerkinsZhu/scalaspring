@@ -9,7 +9,7 @@ import scala.annatation.beans.Student
   * Created by PerkinsZhu on 7/3/18 12:07 AM
   *
   **/
-class TestAnnation {
+class TestAnnotation {
 
 
   @Test
