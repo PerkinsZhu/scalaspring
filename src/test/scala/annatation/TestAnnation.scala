@@ -1,6 +1,8 @@
 package scala.annatation
-
+import scala.reflect.runtime.universe._
 import org.junit.Test
+
+import scala.annatation.beans.Student
 
 /**
   *
@@ -12,7 +14,8 @@ class TestAnnation {
 
   @Test
   def testBean(): Unit ={
-    println("0-0----")
-
+    val result = symbolOf[Student].annotations.find(_.tree.tpe =:= typeOf[Bean])
+    println(result)
+    symbolOf[Student].annotations.foreach(println)
   }
 }

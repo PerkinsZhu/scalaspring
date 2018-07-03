@@ -1,5 +1,7 @@
 package scala.annatation.beans
 
+import javax.inject.Singleton
+
 import scala.annatation.Bean
 
 /**
@@ -8,6 +10,7 @@ import scala.annatation.Bean
   *
   **/
 @Bean("hello")
+@Singleton
 class Student {
 
 }
