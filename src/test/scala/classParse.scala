@@ -1,11 +1,6 @@
 import java.io.File
 import java.net.{JarURLConnection, URLDecoder}
 
-import org.junit.Test
-
-import scala.collection.JavaConverters._
-import scala.collection.JavaConversions._
-
 /**
   *
   * Created by PerkinsZhu on 7/3/18 10:35 PM
