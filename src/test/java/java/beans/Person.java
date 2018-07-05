@@ -1,6 +1,4 @@
-package com.beans;
-
-import scala.Int;
+package java.beans;
 
 /**
  * Created by PerkinsZhu on 2018/7/4 19:21

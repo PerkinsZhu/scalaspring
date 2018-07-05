@@ -1,8 +1,9 @@
-package reflection
+package scala.reflection
 
 import java.io.File
 import java.net.{JarURLConnection, URLDecoder}
 
+import com.user.beans
 import com.user.beans.Person
 import org.junit.Test
 
@@ -81,19 +82,19 @@ class classParse {
     //    val data = res.newInstance()
     //    println(data +"--"+res)
 
-    val classPerson = ru.typeOf[Person].typeSymbol.asClass
+    val classPerson = ru.typeOf[beans.Person].typeSymbol.asClass
     val m = ru.runtimeMirror(getClass.getClassLoader)
     val cm = m.reflectClass(classPerson)
     println(classPerson)
     println(cm)
 
-    val ctor = ru.typeOf[Person].decl(ru.termNames.CONSTRUCTOR).asMethod
+    val ctor = ru.typeOf[beans.Person].decl(ru.termNames.CONSTRUCTOR).asMethod
 
     val ctorm = cm.reflectConstructor(ctor)
     val p = ctorm("aaaa", 12)
     println(p)
 
-    val shippingTermSymb = ru.typeOf[Person].decl(ru.TermName("name")).asTerm
+    val shippingTermSymb = ru.typeOf[beans.Person].decl(ru.TermName("name")).asTerm
     println(shippingTermSymb)
     val im = m.reflect(p)
     val shippingFieldMirror = im.reflectField(shippingTermSymb)
@@ -109,10 +110,10 @@ class classParse {
   def testOther(): Unit = {
     println(Person)
     println(Person.getClass)
-    println(classOf[Person])
-    println(ru.typeOf[Person])
-    println(ru.typeTag[Person])
-    val typeTag = ru.typeTag[Person]
+    println(classOf[beans.Person])
+    println(ru.typeOf[beans.Person])
+    println(ru.typeTag[beans.Person])
+    val typeTag = ru.typeTag[beans.Person]
     val tpe = typeTag.tpe
     val mirror = typeTag.mirror
     val runtimeMirror = ru.runtimeMirror(getClass.getClassLoader)
@@ -125,12 +126,12 @@ class classParse {
     println(rootMirror.hashCode())
     println(runtimeMirror.hashCode())
 
-    val symbol = ru.typeOf[Person].typeSymbol
+    val symbol = ru.typeOf[beans.Person].typeSymbol
     println(symbol)
     println(symbol.asClass)
     val cm = mirror.reflectClass(symbol.asClass)
     println(cm)
-    val ctor = ru.typeOf[Person].decl(ru.termNames.CONSTRUCTOR).asMethod
+    val ctor = ru.typeOf[beans.Person].decl(ru.termNames.CONSTRUCTOR).asMethod
     val constract = cm.reflectConstructor(ctor)
     println("---------------------------------")
     tpe.decls.foreach(item => {
@@ -159,7 +160,7 @@ class classParse {
 
   @Test
   def createStudent(): Unit = {
-    val personType = ru.typeOf[Person]
+    val personType = ru.typeOf[beans.Person]
     val constract = personType.decl(ru.termNames.CONSTRUCTOR).asMethod
     constract.paramLists
     val cm = ru.rootMirror.reflectClass(personType.typeSymbol.asClass)
@@ -171,7 +172,8 @@ class classParse {
 
   @Test
   def testTtt(): Unit = {
-    BeanFactory.createBean[Person]()
+    val bean = BeanFactory.createBean[beans.Person]()
+    println(bean)
 
   }
 
@@ -185,27 +187,28 @@ object BeanFactory {
 
   import scala.reflect.runtime.universe._
 
-  def createBean[T: TypeTag](): Unit = {
+  def createBean[T: TypeTag](): Option[T] = {
     val typee = ru.typeOf[T]
     val constructor = typee.decl(ru.termNames.CONSTRUCTOR).asMethod
     if (constructor.isPrivate) {
       println("private class can not created ")
+      None
     } else {
       val classMirror = ru.runtimeMirror(getClass.getClassLoader).reflectClass(typee.typeSymbol.asClass)
       val constructorMethod = classMirror.reflectConstructor(constructor)
       val params = constructor.paramLists.flatten.map(par => {
-        if (par.typeSignature =:= typeOf[Int]) {0} else {
+        // =：= 判断两个类型是否相等
+        if (par.typeSignature =:= typeOf[Int]) {
+          0
+        } else {
           if (par.typeSignature =:= typeOf[String]) {
             ""
           } else {
             null
           }
         }
-
       })
-      println(params)
-      val bean = constructorMethod(params: _*).asInstanceOf[T]
-      println(bean)
+      Some(constructorMethod(params: _*).asInstanceOf[T])
     }
   }
 

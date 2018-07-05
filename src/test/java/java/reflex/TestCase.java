@@ -1,6 +1,5 @@
-package com.reflex;
+package java.reflex;
 
-import com.beans.Person;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
@@ -12,7 +11,7 @@ public class TestCase {
 
     @Test
     public void testReflex() throws Exception {
-        Class clazz = Class.forName("com.beans.Person");
+        Class clazz = Class.forName("java.beans.Person");
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             print(method.isAccessible() + "--->" + method.getName());

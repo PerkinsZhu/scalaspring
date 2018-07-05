@@ -1,4 +1,4 @@
-package annatation.test
+package scala.annatation.test
 
 import scala.annotation.StaticAnnotation
 import scala.reflect.runtime.universe._
