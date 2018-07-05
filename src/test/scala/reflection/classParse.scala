@@ -1,16 +1,13 @@
+package reflection
+
 import java.io.File
-import java.lang.reflect.Method
 import java.net.{JarURLConnection, URLDecoder}
 
-import annatation.test
 import com.user.beans.Person
 import org.junit.Test
 
-import scala.collection.JavaConverters._
-import scala.collection.JavaConversions._
-import scala.reflect.ClassTag
-import scala.reflect.runtime.{universe => ru}
 import scala.reflect.macros.{Universe => mu}
+import scala.reflect.runtime.{universe => ru}
 
 
 /**
@@ -134,13 +131,83 @@ class classParse {
     val cm = mirror.reflectClass(symbol.asClass)
     println(cm)
     val ctor = ru.typeOf[Person].decl(ru.termNames.CONSTRUCTOR).asMethod
-    cm.reflectConstructor(ctor)
+    val constract = cm.reflectConstructor(ctor)
     println("---------------------------------")
     tpe.decls.foreach(item => {
       println(item + "--->" + item.isPrivate)
     })
-    typeTag.getClass.newInstance()
+    //    typeTag.getClass.newInstance()
+
+    println(constract.symbol)
+    println(constract.symbol.asMethod)
   }
+
+  @Test
+  def testStudent(): Unit = {
+    val decls = ru.typeOf[Student].decls
+    decls.foreach(item => {
+      if (item.isMethod) {
+        val method = item.asMethod
+        method.paramLists.flatten.foreach(sym => {
+          println(s"$method --> ${sym} ---> ${sym.typeSignature}--->${sym.typeSignature}")
+        })
+        if (method.isConstructor) {
+        }
+      }
+    })
+  }
+
+  @Test
+  def createStudent(): Unit = {
+    val personType = ru.typeOf[Person]
+    val constract = personType.decl(ru.termNames.CONSTRUCTOR).asMethod
+    constract.paramLists
+    val cm = ru.rootMirror.reflectClass(personType.typeSymbol.asClass)
+    val constractMetod = cm.reflectConstructor(constract)
+    val res = constractMetod("java", 23)
+    println(res)
+
+  }
+
+  @Test
+  def testTtt(): Unit = {
+    BeanFactory.createBean[Person]()
+
+  }
+
+  class Ttt private()
 
 
 }
+
+
+object BeanFactory {
+
+  import scala.reflect.runtime.universe._
+
+  def createBean[T: TypeTag](): Unit = {
+    val typee = ru.typeOf[T]
+    val constructor = typee.decl(ru.termNames.CONSTRUCTOR).asMethod
+    if (constructor.isPrivate) {
+      println("private class can not created ")
+    } else {
+      val classMirror = ru.runtimeMirror(getClass.getClassLoader).reflectClass(typee.typeSymbol.asClass)
+      val constructorMethod = classMirror.reflectConstructor(constructor)
+      val params = constructor.paramLists.flatten.map(par => {
+        if (par.typeSignature =:= typeOf[Int]) {0} else {
+          if (par.typeSignature =:= typeOf[String]) {
+            ""
+          } else {
+            null
+          }
+        }
+
+      })
+      println(params)
+      val bean = constructorMethod(params: _*).asInstanceOf[T]
+      println(bean)
+    }
+  }
+
+}
+

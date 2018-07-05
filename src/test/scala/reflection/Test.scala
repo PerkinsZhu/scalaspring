@@ -27,18 +27,20 @@ trait ReflectionHelpers {
     val tpe = typeOf[T]
     val classSymbol = tpe.typeSymbol.asClass
 
-    if (!(tpe <:< typeOf[Product] && classSymbol.isCaseClass))
+    if (!(tpe <:< typeOf[Product] && classSymbol.isCaseClass)) {
       throw new IllegalArgumentException(
         "CaseClassFactory only applies to case classes!"
       )
+    }
 
     val classMirror = classLoaderMirror reflectClass classSymbol
 
-    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
+    val constructorSymbol = tpe.decl(termNames.CONSTRUCTOR)
 
     val defaultConstructor =
-      if (constructorSymbol.isMethod) constructorSymbol.asMethod
-      else {
+      if (constructorSymbol.isMethod) {
+        constructorSymbol.asMethod
+      } else {
         val ctors = constructorSymbol.asTerm.alternatives
         ctors.map {
           _.asMethod
@@ -48,6 +50,7 @@ trait ReflectionHelpers {
       }
 
     val constructorMethod = classMirror reflectConstructor defaultConstructor
+
 
     /**
       * Attempts to create a new instance of the specified type by calling the
@@ -61,16 +64,32 @@ trait ReflectionHelpers {
 
 }
 
-case class Person(name: String, age: Int)
+case class Person (name: String, age: Int)
+
+class Student private (name: String, age: Int) extends Person(name, age) {
+  def show(): String = {
+    "Hello"
+  }
+
+  def run(): Unit = {
+
+  }
+
+  def runWithMe(me: String): Unit = {
+
+  }
+
+}
 
 class TestCase {
 
   @Test
   def testDemo(): Unit = {
-    val personFactory = new ReflectionHelpers.CaseClassFactory[Person]
-    val result: Person = personFactory.buildWith(Seq("Connor", 27))
+    val personFactory = new ReflectionHelpers.CaseClassFactory[Student]
+    val result: Student = personFactory.buildWith(Seq("Connor", 27))
     val expected = Person("Connor", 27)
     assert(result == expected)
+//    println(result)
   }
 
 
