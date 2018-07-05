@@ -17,4 +17,8 @@ class PersonService {
   def show(person: Person): Unit = {
     println(person)
   }
+
+  override def toString: String = {
+     "I am PersonService"
+  }
 }

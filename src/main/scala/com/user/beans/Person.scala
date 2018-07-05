@@ -6,4 +6,14 @@ package com.user.beans
   *
   **/
 
-case class Person(name: String, age: Int)
+case class Person(name: String, age: Int) {
+  
+  override def toString: String = {
+    s"i am person:name:${name}, age:${age}"
+  }
+
+
+  def hello(): Unit = {
+    println("====hello person=======")
+  }
+}
