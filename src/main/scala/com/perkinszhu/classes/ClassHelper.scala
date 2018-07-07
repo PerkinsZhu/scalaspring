@@ -11,25 +11,17 @@ import scala.reflect.runtime.universe._
 /**
   * Created by PerkinsZhu on 2018/7/7 11:26
   **/
-object ClassHelper {
-  val basePackage = ""
-  lazy val classes = ClassUtil.getClassSet(basePackage)
-}
 
-object ClassUtil {
+
+object TypeTagUtil {
+
   val logger = LoggerFactory.getLogger(this.getClass)
+  val classLoader = getClass.getClassLoader
+  val typeTagBuilder = new TypeTagBuilder
 
-  def getClassLoader(): ClassLoader = {
-    Thread.currentThread().getContextClassLoader
-  }
-
-  def loadClass(className: String, isInitialized: Boolean): Class[_] = {
-    Class.forName(className, isInitialized, getClassLoader())
-  }
-
-  def getClassSet(packageName: String): Set[Class[_]] = {
-    val classSet = mutable.Set.empty[Class[_]]
-    val urls = getClassLoader().getResources(packageName.replace(".", "/"))
+  def getClassSet(packageName: String): Set[TypeTag[_]] = {
+    val classSet = mutable.Set.empty[TypeTag[_]]
+    val urls = classLoader.getResources(packageName.replace(".", "/"))
     while (urls.hasMoreElements) {
       val url = urls.nextElement()
       val classes = url.getProtocol match {
@@ -38,13 +30,13 @@ object ClassUtil {
           classSet ++= parseFIle(new File(filePath), packageName)
         }
         case "jar" => {
-          //FIXME 在package中会存在jar吗？
+          //FIXME 在package中会存在jar吗？ 这里未实现对jar的解析
           val entries = url.openConnection().asInstanceOf[JarURLConnection].getJarFile.entries()
-          val javClassSet = mutable.Set.empty[Class[_]]
+          val javClassSet = mutable.Set.empty[TypeTag[_]]
           while (entries.hasMoreElements) {
             val entry = entries.nextElement()
             if (entry.getName.endsWith(".class")) {
-              javClassSet.add(getClassLoader().loadClass(entry.getName))
+              //              javClassSet.add(typeTagBuilder (entry.getName))
             }
           }
           classSet ++= javClassSet
@@ -60,7 +52,7 @@ object ClassUtil {
   }
 
 
-  private def parseFIle(file: File, packageName: String): List[Class[_]] = {
+  private def parseFIle(file: File, packageName: String): List[TypeTag[_]] = {
     file.listFiles().toList.flatMap(file => {
       file.isDirectory match {
         case true => {
@@ -70,7 +62,7 @@ object ClassUtil {
         case false => {
           val fileName = file.getName
           val className = packageName + "." + fileName.substring(0, fileName.size - 6)
-          List(getClassLoader().loadClass(className))
+          List(typeTagBuilder.stringToTypeTag(className))
         }
       }
     })
