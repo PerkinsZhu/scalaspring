@@ -8,3 +8,9 @@ import scala.annotation.StaticAnnotation
   *
   **/
 class Service(name: String = "") extends StaticAnnotation
+
+class Action(name: String = "") extends StaticAnnotation
+
+class Inject(name: String = "") extends StaticAnnotation
+
+class Request(path: String, method: String = "GET") extends StaticAnnotation
