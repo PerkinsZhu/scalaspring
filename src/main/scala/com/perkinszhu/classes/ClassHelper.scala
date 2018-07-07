@@ -7,6 +7,7 @@ import com.perkinszhu.annotation.item.{Action, Inject, Service}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
+import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
 /**
@@ -22,7 +23,17 @@ class ClassHelper(packagePath: String) {
   val actionTypeTagSet = mutable.Set.empty[TypeTag[_]]
   val injectTypeTagSet = mutable.Set.empty[TypeTag[_]]
 
+  def parseHandler(tag: universe.TypeTag[_]): Unit = {
+    tag.tpe.decls.foreach(symbol => {
+      if (symbol.isMethod) {
+        //TODO 取出Action注解的method 。
+        //疑问：这里的Controller是如何实现的？不需要注解吗？
+        //symbol.asMethod.annotations.find()
+      }
+    })
+  }
 
+  val init = {
     val serviceType = typeOf[Service]
     val actionType = typeOf[Action]
     val injectType = typeOf[Inject]
@@ -30,12 +41,16 @@ class ClassHelper(packagePath: String) {
       tag.tpe.typeSymbol.asClass.annotations.foreach(anno => {
         anno.tree.tpe match {
           case serviceType => serviceTypeTagSet += tag
-          case actionType => actionTypeTagSet += tag
+          case actionType => {
+            actionTypeTagSet += tag
+            parseHandler(tag)
+          }
           case injectType => injectTypeTagSet += tag
           case other => logger.error(s"未知注解[$other]类型")
         }
       })
     })
+  }
 
 
 }

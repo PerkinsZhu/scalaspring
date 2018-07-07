@@ -14,8 +14,8 @@ class TypeTagBuilder() {
   val toolbox = currentMirror.mkToolBox()
 
   def createTypeTag(tp: String): TypeTag[_] = {
-    val ttree = toolbox.parse(s"scala.reflect.runtime.universe.typeTag[$tp]")
-    toolbox.eval(ttree).asInstanceOf[TypeTag[_]]
+    val tree = toolbox.parse(s"scala.reflect.runtime.universe.typeTag[$tp]")
+    toolbox.eval(tree).asInstanceOf[TypeTag[_]]
   }
 
   def stringToTypeTag[A](name: String): TypeTag[A] = {
