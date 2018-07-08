@@ -29,15 +29,21 @@ class TypeTagUtilTest {
     println(classHelper.serviceTypeTagSet)
     println(classHelper.actionMap)
     println(classHelper.injectTypeTagSet)
-    /*classHelper.actionMap.foreach(item =>{
+    classHelper.actionMap.foreach(item => {
       val handel = item._2
+      val tag = handel.controllerTag
+      val method = handel.actionMethod.asMethod
       val mirror = runtimeMirror(handel.controllerTag.getClass.getClassLoader)
-      val instanceMirror = mirror.reflect(handel.controllerTag)
-      val addPerson = instanceMirror.reflectMethod(handel.actionMethod.asMethod)
-        addPerson()
-
+      val consM = tag.decl(termNames.CONSTRUCTOR).asMethod
+      val init = mirror.reflectClass(tag.typeSymbol.asClass).reflectConstructor(consM)
+      val controller = init()
+      println(controller)
+      val instanceMirror = mirror.reflect(controller)
+      val addPerson = instanceMirror.reflectMethod(method)
+      val result = addPerson()
+      print(result)
     }
-    )*/
+    )
 
   }
 

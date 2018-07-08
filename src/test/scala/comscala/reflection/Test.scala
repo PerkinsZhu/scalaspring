@@ -6,6 +6,7 @@ package comscala.reflection
   *
   **/
 
+import com.user.{PersonController, PersonService}
 import comscala.beans.{Person, Student}
 import org.junit.Test
 
@@ -65,6 +66,8 @@ trait ReflectionHelpers {
 
 }
 
+
+
 class TestCase {
 
   @Test
@@ -74,6 +77,16 @@ class TestCase {
     val expected = Person("Connor", 27)
     assert(result == expected)
     //    println(result)
+  }
+
+
+
+  @Test
+  def testMethod(): Unit = {
+    val tag = typeOf[PersonController]
+    val rm = runtimeMirror(tag.getClass.getClassLoader)
+    val method = tag.decl(TermName("addPerson")).asMethod
+
   }
 
 

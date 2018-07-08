@@ -7,8 +7,6 @@ import com.perkinszhu.annotation.item.{Action, Controller, Inject, Service}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
-import scala.reflect.macros.whitebox.{Context => c}
-import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
 /**
@@ -17,6 +15,7 @@ import scala.reflect.runtime.universe._
 
 
 class ClassHelper(packagePath: String) {
+  val basePath ="/scalaspring-1.0-SNAPSHOT"
   val logger = LoggerFactory.getLogger(this.getClass)
   val typeTagSet = TypeTagUtil.getClassSet(packagePath)
 
@@ -32,7 +31,8 @@ class ClassHelper(packagePath: String) {
         if (action.nonEmpty) {
           val tree = action.get.tree
           val Literal(Constant(requestPath: String)) :: Literal(Constant(requestMethod: String)) :: Nil = tree.children.tail
-          actionMap.+=((Request(requestPath, requestMethod), Handle(tag, symbol)))
+          val request = Request(basePath+requestPath, requestMethod)
+          actionMap.+=((request, Handle(tag, symbol)))
         }
       }
     })
@@ -117,8 +117,8 @@ object TypeTagUtil {
         case false => {
           val fileName = file.getName
           val className = packageName + "." + fileName.substring(0, fileName.size - 6)
-          List(typeTagBuilder.createTypeTag(className))
-          Nil
+          val tag = typeOf(typeTagBuilder.createTypeTag(className))
+          List(tag)
         }
       }
     })

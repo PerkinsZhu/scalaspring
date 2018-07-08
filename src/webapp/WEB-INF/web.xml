@@ -1,13 +1,13 @@
 <web-app>
 
-  <servlet>
-    <servlet-name>scalaSpring</servlet-name>
-    <servlet-class>HelloScalaSpring</servlet-class>
-  </servlet>
+    <servlet>
+        <servlet-name>scalaSpring</servlet-name>
+        <servlet-class>com.perkinszhu.frame.DispatcherServlet</servlet-class>
+    </servlet>
 
-  <servlet-mapping>
-    <servlet-name>scalaSpring</servlet-name>
-    <url-pattern>/*</url-pattern>
-  </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>scalaSpring</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
 
 </web-app>

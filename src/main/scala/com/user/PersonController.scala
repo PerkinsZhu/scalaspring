@@ -1,6 +1,7 @@
 package com.user
 
 import com.perkinszhu.annotation.item.{Action, Controller}
+import org.slf4j.LoggerFactory
 
 /**
   *
@@ -9,11 +10,12 @@ import com.perkinszhu.annotation.item.{Action, Controller}
   **/
 @Controller("person")
 class PersonController {
+  val logger = LoggerFactory.getLogger(this.getClass)
 
-
-  @Action("addPerson",method = "POST")
-  def addPerson(): Unit = {
-    println("----addPerson-----")
+  @Action("/addPerson",method = "GET")
+  def addPerson(): Int = {
+    logger.info("正在查询person")
+    190
   }
 
 
