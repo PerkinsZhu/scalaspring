@@ -17,17 +17,28 @@ class TypeTagUtilTest {
     val result = TypeTagUtil.getClassSet("com.user")
     println(result)
     val annotations = result.map(tag => {
-      println(tag.tpe.typeSymbol.asClass.annotations)
-      println(tag.tpe.decls)
+      println(tag.typeSymbol.asClass.annotations)
+      println(tag.decls)
     })
   }
 
   @Test
   def testClassHelper(): Unit = {
     val classHelper = new ClassHelper("com.user")
+    println(classHelper.controllerTypeTagSet)
     println(classHelper.serviceTypeTagSet)
-    println(classHelper.actionTypeTagSet)
+    println(classHelper.actionMap)
     println(classHelper.injectTypeTagSet)
+    /*classHelper.actionMap.foreach(item =>{
+      val handel = item._2
+      val mirror = runtimeMirror(handel.controllerTag.getClass.getClassLoader)
+      val instanceMirror = mirror.reflect(handel.controllerTag)
+      val addPerson = instanceMirror.reflectMethod(handel.actionMethod.asMethod)
+        addPerson()
+
+    }
+    )*/
+
   }
 
 }

@@ -3,10 +3,11 @@ package com.perkinszhu.classes
 import java.io.File
 import java.net.{JarURLConnection, URLDecoder}
 
-import com.perkinszhu.annotation.item.{Action, Inject, Service}
+import com.perkinszhu.annotation.item.{Action, Controller, Inject, Service}
 import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
+import scala.reflect.macros.whitebox.{Context => c}
 import scala.reflect.runtime.universe
 import scala.reflect.runtime.universe._
 
@@ -19,34 +20,46 @@ class ClassHelper(packagePath: String) {
   val logger = LoggerFactory.getLogger(this.getClass)
   val typeTagSet = TypeTagUtil.getClassSet(packagePath)
 
-  val serviceTypeTagSet = mutable.Set.empty[TypeTag[_]]
-  val actionTypeTagSet = mutable.Set.empty[TypeTag[_]]
-  val injectTypeTagSet = mutable.Set.empty[TypeTag[_]]
+  val serviceTypeTagSet = mutable.Set.empty[Type]
+  val controllerTypeTagSet = mutable.Set.empty[Type]
+  val actionMap = mutable.HashMap.empty[Request, Handle]
+  val injectTypeTagSet = mutable.Set.empty[Type]
 
-  def parseHandler(tag: universe.TypeTag[_]): Unit = {
-    tag.tpe.decls.foreach(symbol => {
+  def parseHandler(tag: Type): Unit = {
+    tag.decls.foreach(symbol => {
       if (symbol.isMethod) {
-        //TODO 取出Action注解的method 。
-        //疑问：这里的Controller是如何实现的？不需要注解吗？
-        //symbol.asMethod.annotations.find()
+        val action = symbol.asMethod.annotations.find(_.tree.tpe =:= typeOf[Action])
+        if (action.nonEmpty) {
+          val tree = action.get.tree
+          val Literal(Constant(requestPath: String)) :: Literal(Constant(requestMethod: String)) :: Nil = tree.children.tail
+          actionMap.+=((Request(requestPath, requestMethod), Handle(tag, symbol)))
+        }
       }
     })
   }
 
+  def getCustomAnnotationData(tree: Tree) = {
+    val Apply(_, Literal(Constant(path: String)) :: Literal(Constant(method: String)) :: Nil) = tree
+    new Action(path, method)
+  }
+
   val init = {
     val serviceType = typeOf[Service]
+    val controllerType = typeOf[Controller]
     val actionType = typeOf[Action]
     val injectType = typeOf[Inject]
     typeTagSet.foreach(tag => {
-      tag.tpe.typeSymbol.asClass.annotations.foreach(anno => {
+      tag.typeSymbol.asClass.annotations.foreach(anno => {
         anno.tree.tpe match {
-          case serviceType => serviceTypeTagSet += tag
-          case actionType => {
-            actionTypeTagSet += tag
+          case `serviceType` =>
+            serviceTypeTagSet += tag
+          case `controllerType` => {
+            controllerTypeTagSet += tag
             parseHandler(tag)
           }
-          case injectType => injectTypeTagSet += tag
-          case other => logger.error(s"未知注解[$other]类型")
+          case `injectType` =>
+            injectTypeTagSet += tag
+          case other => logger.warn(s"未知注解[$other]类型")
         }
       })
     })
@@ -61,8 +74,8 @@ object TypeTagUtil {
   val classLoader = getClass.getClassLoader
   val typeTagBuilder = new TypeTagBuilder
 
-  def getClassSet(packageName: String): Set[TypeTag[_]] = {
-    val classSet = mutable.Set.empty[TypeTag[_]]
+  def getClassSet(packageName: String): Set[Type] = {
+    val classSet = mutable.Set.empty[Type]
     val urls = classLoader.getResources(packageName.replace(".", "/"))
     while (urls.hasMoreElements) {
       val url = urls.nextElement()
@@ -74,7 +87,7 @@ object TypeTagUtil {
         case "jar" => {
           //FIXME 在package中会存在jar吗？ 这里未实现对jar的解析
           val entries = url.openConnection().asInstanceOf[JarURLConnection].getJarFile.entries()
-          val javClassSet = mutable.Set.empty[TypeTag[_]]
+          val javClassSet = mutable.Set.empty[Type]
           while (entries.hasMoreElements) {
             val entry = entries.nextElement()
             if (entry.getName.endsWith(".class")) {
@@ -94,7 +107,7 @@ object TypeTagUtil {
   }
 
 
-  private def parseFIle(file: File, packageName: String): List[TypeTag[_]] = {
+  private def parseFIle(file: File, packageName: String): List[Type] = {
     file.listFiles().toList.flatMap(file => {
       file.isDirectory match {
         case true => {
@@ -104,7 +117,8 @@ object TypeTagUtil {
         case false => {
           val fileName = file.getName
           val className = packageName + "." + fileName.substring(0, fileName.size - 6)
-          List(typeTagBuilder.stringToTypeTag(className))
+          List(typeTagBuilder.createTypeTag(className))
+          Nil
         }
       }
     })

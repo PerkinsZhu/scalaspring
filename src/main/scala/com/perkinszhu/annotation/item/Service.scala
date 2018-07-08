@@ -1,6 +1,7 @@
 package com.perkinszhu.annotation.item
 
 import scala.annotation.StaticAnnotation
+import scala.tools.nsc.io.Path
 
 /**
   *
@@ -9,7 +10,9 @@ import scala.annotation.StaticAnnotation
   **/
 class Service(name: String = "") extends StaticAnnotation
 
-class Action(name: String = "") extends StaticAnnotation
+class Controller(name: String = "") extends StaticAnnotation
+
+class Action(path: String = "", method: String = "GET") extends StaticAnnotation
 
 class Inject(name: String = "") extends StaticAnnotation
 

@@ -162,6 +162,7 @@ class classParse {
   @Test
   def createStudent(): Unit = {
     val personType = ru.typeOf[Person]
+    println(personType)
     val constract = personType.decl(ru.termNames.CONSTRUCTOR).asMethod
     constract.paramLists
     val cm = ru.rootMirror.reflectClass(personType.typeSymbol.asClass)

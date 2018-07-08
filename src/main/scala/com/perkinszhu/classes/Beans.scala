@@ -1,13 +1,13 @@
 package com.perkinszhu.classes
 
-import java.lang.reflect.Method
-import javassist.bytecode.stackmap.TypeTag
+import scala.reflect.runtime.universe._
+
 
 /**
   * Created by PerkinsZhu on 2018/7/7 17:51
   **/
 
-case class Request(method: String, path: String)
+case class Request(requestPath: String, requestMethod: String)
 
-case class Handle(controllerTypeTag: TypeTag[_], actionMethod: Method)
+case class Handle(controllerTag: Type, actionMethod: Symbol)
 
